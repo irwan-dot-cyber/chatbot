@@ -1,0 +1,6 @@
+node_modules/
+pdf_in/
+kb_text/
+vector_index/
+.env
+*.log
