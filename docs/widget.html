@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A.I.R Chat</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { margin:0; background:#f7fafc; }
+    .wrap { max-width: 520px; margin: 24px auto; padding: 0 12px; }
+    .card { background:#fff; border-radius:16px; box-shadow:0 6px 24px rgba(0,0,0,.12); overflow:hidden; }
+    .head { padding:12px 16px; font-weight:600; border-bottom:1px solid #eee; }
+    .msgs { height: 360px; overflow:auto; padding: 12px; }
+    .msg { margin: 8px 0; }
+    .me  { text-align:right; }
+    .me span { display:inline-block; background:#e6f0ff; padding:8px 12px; border-radius:14px; }
+    .bot span{ display:inline-block; background:#f1f5f9; padding:8px 12px; border-radius:14px; white-space:pre-wrap;}
+    form { display:flex; gap:8px; padding:12px; border-top:1px solid #eee; }
+    textarea { flex:1; resize:vertical; min-height:48px; max-height:120px; padding:8px; border-radius:10px; border:1px solid #ddd; }
+    button { padding:10px 14px; border-radius:10px; border:0; background:#2563eb; color:#fff; cursor:pointer; }
+    .hint { font-size:12px; color:#64748b; padding:8px 16px 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">A.I.R Chatbot</div>
+      <div id="msgs" class="msgs"></div>
+      <form id="f">
+        <textarea id="q" placeholder="Tanya Inpres 2/2025, cakupan, aktor, dsb..."></textarea>
+        <button type="submit">Kirim</button>
+      </form>
+      <div class="hint">Catatan: Jawaban diringkas dari dokumen lokal (RAG).</div>
+    </div>
+  </div>
+<script>
+const API_BASE = "https://xxxx.ngrok.io"; // GANTI: base URL API kamu (bukan GitHub)
+const API = API_BASE + "/api/chat";
+
+const mbox = document.getElementById("msgs");
+const form = document.getElementById("f");
+const q    = document.getElementById("q");
+
+function addMsg(txt, who="bot") {
+  const div = document.createElement("div");
+  div.className = "msg " + (who==="me" ? "me":"bot");
+  const span = document.createElement("span");
+  span.innerText = txt;
+  div.appendChild(span);
+  mbox.appendChild(div);
+  mbox.scrollTop = mbox.scrollHeight;
+}
+
+form.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const text = q.value.trim();
+  if (!text) return;
+  addMsg(text, "me");
+  q.value = "";
+  addMsg("…", "bot");
+  try {
+    const resp = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({ question: text })
+    });
+    const data = await resp.json();
+    mbox.lastChild.remove();
+    addMsg(data?.answer || "Maaf, tidak ada jawaban.");
+  } catch (err) {
+    mbox.lastChild.remove();
+    addMsg("Gagal memuat jawaban.");
+  }
+});
+</script>
+</body>
+</html>
